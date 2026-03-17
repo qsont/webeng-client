@@ -9,10 +9,58 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { Label } from "@/components/ui/label";
+import useAuthStore from "@/store/authStore";
+
+const registerFields = [
+  {
+    label: "Name",
+    name: "name",
+    type: "text",
+    placeholder: "Enter full name here",
+  },
+  {
+    label: "Email",
+    name: "email",
+    type: "email",
+    placeholder: "juandelacruz@gmail.com",
+  },
+  {
+    label: "Password",
+    name: "password",
+    type: "password",
+    placeholder: "Enter password (Minimum of 8 characters)",
+  },
+  {
+    label: "Confirm Password",
+    name: "confirm",
+    type: "password",
+    placeholder: "Confirm password above",
+  },
+  {
+    label: "Phone number",
+    name: "phone",
+    type: "tel",
+    placeholder: `0912 345 6789 or 09123456789`,
+  },
+  {
+    label: "Current address",
+    name: "address",
+    type: "text",
+    placeholder: "Max 50 characters",
+  },
+];
 
 const registerSchema = z.object({
+  name: z.string().min(5, "Please enter your full name."),
   email: z.email("Please enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters long."),
+  confirm: z.string().min(8, "Passwords must match"),
+  phone: z.string().min(11, "Please enter a valid phone number.").max(13),
+  address: z.string().min(5, "Please enter your address."),
+}).refine((data) => data.password === data.confirm, {
+  message: "Passwords don't match",
+  path: ["confirm"]
 });
 
 function Register() {
@@ -22,35 +70,28 @@ function Register() {
 
   const form = useForm({
     resolver: zodResolver(registerSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: registerFields.reduce((accumulator, field) => {
+      accumulator[field.name] = "";
+      return accumulator;
+    }, {}),
   });
+
+  const register = useAuthStore((state) => state.register);
 
   const onSubmit = async (data) => {
     setStoreError("");
 
-    const authStore = await import("@/store/authStore");
-
-    if (typeof authStore.register !== "function") {
-      setStoreError("authStore.register is not implemented yet.");
-      return;
-    }
-
     try {
-      const result = await authStore.register(data);
-
-      if (result?.error) {
-        setStoreError(result.error);
+      const result = await register(data);
+      if (!result?.success) {
+        setStoreError(result?.message ?? "Registration failed");
         return;
       }
-
       toast({
         title: "Registration complete",
         description: "You can now log in.",
       });
-      navigate("/login");
+      navigate("./login");
     } catch (error) {
       setStoreError(error?.message || "Registration failed. Please try again.");
     }
@@ -71,29 +112,22 @@ function Register() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
-            <div>
-              <Input
-                type="email"
-                placeholder="Email"
-                className="ui-field"
-                {...form.register("email")}
-              />
-              {form.formState.errors.email ? (
-                <p className="mt-1 text-sm text-destructive">{form.formState.errors.email.message}</p>
-              ) : null}
-            </div>
-
-            <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                className="ui-field"
-                {...form.register("password")}
-              />
-              {form.formState.errors.password ? (
-                <p className="mt-1 text-sm text-destructive">{form.formState.errors.password.message}</p>
-              ) : null}
-            </div>
+            {registerFields.map((field) => (
+              <div key={field.name}>
+                <Label className="mb-2">{field.label}</Label>
+                <Input
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  className="ui-field"
+                  {...form.register(field.name)}
+                />
+                {form.formState.errors[field.name] ? (
+                  <p className="mt-1 text-sm text-destructive">
+                    {form.formState.errors[field.name].message}
+                  </p>
+                ) : null}
+              </div>
+            ))}
 
             <Button type="submit" className="w-full rounded-full bg-brand-violet-600 hover:bg-brand-violet-700">
               Register

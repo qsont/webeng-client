@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import useAuthStore from "@/store/authStore";
 
 const loginSchema = z.object({
   email: z.email("Please enter a valid email address."),
@@ -28,33 +29,24 @@ function Login() {
     },
   });
 
+  const login = useAuthStore((state) => state.login);
+
   const onSubmit = async (data) => {
+    
     setStoreError("");
 
-    const authStore = await import("@/store/authStore");
-
-    if (typeof authStore.login !== "function") {
-      setStoreError("authStore.login is not implemented yet.");
-      return;
-    }
-
     try {
-      const result = await authStore.login(data);
-
-      if (result?.error) {
-        setStoreError(result.error);
+      const result = await login(data);
+      if (!result?.success) {
+        setStoreError(result?.message ?? "Login failed");
         return;
-      }
-
-      if (result?.token) {
-        localStorage.setItem("auth_token", result.token);
       }
 
       toast({
         title: "Welcome back",
-        description: "Login successful.",
+        description: `Login successful. You are ${result?.user.role}`,
       });
-      navigate("/dashboard");
+      (result?.user.role === "admin") ? navigate("/admin/dashboard") : navigate("/shop");
     } catch (error) {
       setStoreError(error?.message || "Login failed. Please try again.");
     }

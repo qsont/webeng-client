@@ -6,6 +6,7 @@ import {
 	NavigationMenuList,
 } from "../ui/navigation-menu";
 import { Menu, X } from "lucide-react";
+import useAuthStore from "@/store/authStore";
 
 function Navigation() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,6 +21,8 @@ function Navigation() {
 	const toggleMobileMenu = () => {
 		setIsMobileMenuOpen(!isMobileMenuOpen);
 	};
+
+	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
 	return (
 		<nav className="bg-gray-200/5 backdrop-blur-3xl shadow-md fixed w-full top-0 z-50">
@@ -52,7 +55,7 @@ function Navigation() {
 
 					<div className="hidden md:block">
 						<Button asChild className="bg-brand-accent-600 hover:bg-brand-accent-700 rounded-full text-white px-6">
-							<a href="/login">Login</a>
+							{(isAuthenticated) ? <a href="/shop">Shop</a> : <a href="/auth/login">Login</a>}
 						</Button>
 					</div>
 
