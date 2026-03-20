@@ -20,12 +20,12 @@ const products = [
 ];
 
 function Demo() {
-  return (<section className="flex flex-col items-center bg-white p-6 m-6">
+  return (<section className="flex flex-col items-center bg-white p-4 sm:p-6 lg:p-8 m-2 sm:m-4 lg:m-6">
 
 
-    <h1 className="text-6xl font-bold my-6">The Best in Town</h1>
+    <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold my-4 sm:my-6 lg:my-8 text-center">The Best in Town</h1>
 
-    <div className="flex w-full flex-col md:flex-row gap-4">
+    <div className="flex w-full flex-col md:flex-row gap-3 sm:gap-4 lg:gap-6">
       {products.map((product) => (
         <DemoCard className="w-full md:flex-1 md:basis-0" product={product}/>  
       ))}
