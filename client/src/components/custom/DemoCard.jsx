@@ -14,11 +14,11 @@ function DemoCard({ product, className }) {
           src={product.img}
           alt={product.name}
         />
-        <h2 className="text-xl text-center font-bold">{product.name}</h2>
+        <h2 className="text-base sm:text-lg lg:text-xl text-center font-bold">{product.name}</h2>
         <div className="h-full">
           <Button
             asChild
-            className="ui-demo-card-button bg-brand-violet-600">
+            className="ui-demo-card-button bg-brand-violet-600 text-xs sm:text-sm">
             <span>Buy now!</span>
           </Button>
         </div>
