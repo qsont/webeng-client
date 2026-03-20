@@ -162,7 +162,7 @@ function Transactions() {
       </div>
 
       {viewMode === "row" ? (
-      <div className="overflow-x-auto rounded-lg border -mx-3 sm:mx-0">
+      <div className="ui-scrollbar overflow-x-auto rounded-3xl border -mx-3 sm:mx-0">
         <table className="w-full text-xs sm:text-sm">
           <thead className="bg-brand-violet-100/60 text-left text-brand-violet-800">
             <tr>
@@ -223,7 +223,7 @@ function Transactions() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <span className="font-medium text-xs text-muted-foreground">Amount</span>
-                  <p className="text-sm">${Number(transaction?.amountReceived).toFixed(2)}</p>
+                  <p className="text-sm">₱{Number(transaction?.amountReceived).toFixed(2)}</p>
                 </div>
                 <div>
                   <span className="font-medium text-xs text-muted-foreground">Completed</span>

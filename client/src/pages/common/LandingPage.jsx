@@ -14,7 +14,7 @@ function LandingPage() {
     if (isChecking) return null;
     if (path) return <Navigate to={path} replace />;
 
-    return (<main className="flex flex-col items-center">
+    return (<main className="flex w-full flex-col items-center bg-background text-foreground">
         <Navigation />
         <Banner />
         <Demo />

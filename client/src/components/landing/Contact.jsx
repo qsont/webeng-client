@@ -17,7 +17,7 @@ function Contact() {
         <h2 className="text-xl font-semibold mb-6">Contact Information</h2>
         
         <div className="flex gap-4 items-start">
-          <Mail className="w-5 h-5 mt-1 flex-shrink-0" />
+          <Mail className="w-5 h-5 mt-1 shrink-0" />
           <div>
             <p className="font-medium">Email</p>
             <p className="text-brand-accent-100">hello@graham.com</p>
@@ -25,7 +25,7 @@ function Contact() {
         </div>
         
         <div className="flex gap-4 items-start">
-          <Phone className="w-5 h-5 mt-1 flex-shrink-0" />
+          <Phone className="w-5 h-5 mt-1 shrink-0" />
           <div>
             <p className="font-medium">Phone</p>
             <p className="text-brand-accent-100">+1 (555) 123-4567</p>
@@ -33,7 +33,7 @@ function Contact() {
         </div>
         
         <div className="flex gap-4 items-start">
-          <MapPin className="w-5 h-5 mt-1 flex-shrink-0" />
+          <MapPin className="w-5 h-5 mt-1 shrink-0" />
           <div>
             <p className="font-medium">Location</p>
             <p className="text-brand-accent-100">123 Graham Street, City, Country</p>
@@ -50,7 +50,7 @@ function Contact() {
           <Input className="ui-field" type="tel" placeholder="PHONE" />
         </div>
         <Textarea className="ui-textarea" placeholder="MESSAGE" />
-        <Button className="self-end bg-brand-accent-900 hover:bg-black rounded-full px-4 sm:px-6 text-sm text-white transition-colors" type="submit">Send Message</Button>
+        <Button className="self-end rounded-full bg-brand-accent-900 px-4 text-sm text-white transition-colors hover:bg-brand-accent-950 sm:px-6" type="submit">Send Message</Button>
       </form>
     </div>
   </section>);

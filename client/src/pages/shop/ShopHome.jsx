@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,34 +42,46 @@ function ShopHome() {
     return `Filtered by ${selectedCategories.length} categor${selectedCategories.length > 1 ? "ies" : "y"}`;
   }, [selectedCategories]);
 
+  const getFlavorChipClass = (category) => {
+    const value = String(category ?? "").toLowerCase();
+    if (value.includes("mango")) return "bg-flavor-mango text-flavor-mango-foreground";
+    if (value.includes("milo")) return "bg-flavor-milo text-flavor-milo-foreground";
+    if (value.includes("cookies")) return "bg-flavor-cookies text-flavor-cookies-foreground";
+    return "bg-brand-accent-600 text-white";
+  };
+
   return (
     <section className="space-y-6">
-      <div className="relative overflow-hidden rounded-xl border">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-float">
         <img
           src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1600&q=80"
           alt="Shop banner"
           className="h-52 w-full object-cover sm:h-64"
         />
-        <div className="absolute inset-0 bg-linear-to-r from-black/65 to-black/25" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/35 to-black/10" />
         <div className="absolute bottom-5 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-xl">
-          <h1 className="text-2xl font-semibold text-white sm:text-3xl">Discover products that match your style</h1>
-          <p className="mt-1 text-sm text-white/85">Use filters and search to quickly find what you need.</p>
+          <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-brand-accent-200/90 px-3 py-1 text-xs font-semibold text-brand-accent-900">
+            <Sparkles className="size-3.5" />
+            Graham & Cream Collection
+          </span>
+          <h1 className="text-2xl font-black text-white sm:text-3xl">Scoop your next favorite bar</h1>
+          <p className="mt-1 text-sm text-white/90">Browse handcrafted local flavors with filters built for quick cravings.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
-        <aside className="h-fit space-y-4 rounded-lg border bg-card p-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[300px_1fr]">
+        <aside className="h-fit space-y-4 rounded-3xl border border-border bg-card p-5 shadow-soft">
           <div>
-            <h2 className="text-sm font-semibold text-brand-violet-700">Filter by category</h2>
+            <h2 className="text-sm font-semibold text-brand-accent-700">Filter by category</h2>
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           </div>
 
           <div className="space-y-2">
             {categories?.map((category) => (
-              <label key={category} className="flex items-center gap-2 text-sm">
+              <label key={category} className="flex items-center gap-2 rounded-2xl px-2 py-1 text-sm transition-colors hover:bg-muted/60">
                 <input
                   type="checkbox"
-                  className="size-4 accent-brand-violet-600"
+                  className="size-4 accent-brand-accent-600"
                   checked={selectedCategories.includes(category)}
                   onChange={() => toggleCategory(category)}
                 />
@@ -80,14 +92,14 @@ function ShopHome() {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="sort-by" className="text-sm font-semibold text-brand-violet-700">
+            <label htmlFor="sort-by" className="text-sm font-semibold text-brand-accent-700">
               Sort products
             </label>
             <select
               id="sort-by"
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-transparent px-2.5 py-2 text-sm outline-none">
+              className="h-10 w-full rounded-2xl border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400">
               <option value="createdAt_desc">Newest</option>
               <option value="price_asc">Price: Low to High</option>
               <option value="price_desc">Price: High to Low</option>
@@ -107,7 +119,7 @@ function ShopHome() {
                 className="pl-8"
               />
             </div>
-            <Button type="submit" className="bg-brand-violet-600 text-white hover:bg-brand-violet-700">
+            <Button type="submit" className="rounded-full bg-brand-accent-600 text-white hover:bg-brand-accent-700">
               Search
             </Button>
           </form>
@@ -116,15 +128,17 @@ function ShopHome() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {products?.map((product) => (
-              <article key={product?._id} className="overflow-hidden rounded-lg border bg-card">
+              <article key={product?._id} className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-float">
                 <img src={product?.image} alt={product?.title} className="h-44 w-full object-cover" />
                 <div className="space-y-2 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-violet-700">{product?.category}</p>
-                  <h3 className="line-clamp-1 text-base font-semibold">{product?.title}</h3>
+                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${getFlavorChipClass(product?.category)}`}>
+                    {product?.category}
+                  </span>
+                  <h3 className="line-clamp-1 text-base font-bold text-foreground">{product?.title}</h3>
                   <p className="line-clamp-2 text-sm text-muted-foreground">{product?.description}</p>
                   <div className="flex items-center justify-between pt-2">
-                    <p className="text-sm font-semibold">${Number(product?.price).toFixed(2)}</p>
-                    <Button asChild size="sm" className="bg-brand-violet-600 text-white hover:bg-brand-violet-700">
+                    <p className="text-base font-black text-brand-accent-700">₱{Number(product?.price).toFixed(2)}</p>
+                    <Button asChild size="sm" className="rounded-full bg-brand-accent-600 text-white hover:bg-brand-accent-700">
                       <Link to={`/product/${product?._id}`}>View product</Link>
                     </Button>
                   </div>

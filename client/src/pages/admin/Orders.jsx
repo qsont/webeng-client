@@ -217,7 +217,7 @@ function Orders() {
       </div>
 
       {viewMode === "row" ? (
-      <div className="overflow-x-auto rounded-lg border -mx-3 sm:mx-0">
+      <div className="ui-scrollbar overflow-x-auto rounded-3xl border -mx-3 sm:mx-0">
         <table className="w-full text-xs sm:text-sm">
           <thead className="bg-brand-violet-100/60 text-left text-brand-violet-800">
             <tr>
@@ -289,7 +289,7 @@ function Orders() {
                 </div>
                 <div>
                   <span className="font-medium text-xs text-muted-foreground">Amount</span>
-                  <p className="text-sm">${Number(order?.totalAmount).toFixed(2)}</p>
+                  <p className="text-sm">₱{Number(order?.totalAmount).toFixed(2)}</p>
                 </div>
               </div>
               <div>
