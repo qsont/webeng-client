@@ -30,7 +30,6 @@ export const register = async (req, res) => {
     user.password = await bcrypt.hash(password, 10);
     await user.save();
 
-    console.log("Success!")
     res.status(200).json({ success: true, message: "User registered successfully." });
   }
   catch (error) {
@@ -50,7 +49,14 @@ export const login = async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) throw new Error("Invalid email or password.");
 
-    const jwtToken = jwt.sign({ email, role: user?.role }, process.env.JWT_SEC);
+    const payload = {
+      id: user?._id,
+      name: user?.name,
+      email: user?.email,
+      role: user?.role || "user"
+    };
+
+    const jwtToken = jwt.sign({ ...payload }, process.env.JWT_SEC);
 
     res.cookie("token", jwtToken, {
       httpOnly: true,
@@ -58,14 +64,10 @@ export const login = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week lifespan
     });
-    res.status(200).json({ 
-      success: true, 
-      message: "Login successful!", 
-      user: {
-        id: user?._id,
-        email: user?.email,
-        role: user?.role || "user"
-      }});
+    res.status(200).json({
+      success: true,
+      message: "Login successful!",
+    });
   }
   catch (error) {
     res.status(400).json({ success: false, message: error.message });

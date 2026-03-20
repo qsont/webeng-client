@@ -2,10 +2,63 @@ import Product from "../model/Product.js";
 
 export const getProducts = async (req, res) => {
   try {
-    const { category } = req.query;
-    const filter = category ? { category } : {};
-    const products = await Product.find(filter).sort({ createdAt: -1 });
+    const {
+      category,
+      categories,
+      search,
+      minPrice,
+      maxPrice,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    const filter = {};
+
+    const categoryList = categories
+      ? categories
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+      : [];
+
+    if (categoryList.length > 0) {
+      filter.category = { $in: categoryList };
+    } else if (category) {
+      filter.category = category;
+    }
+
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      filter.price = {};
+      if (minPrice !== undefined) {
+        filter.price.$gte = Number(minPrice);
+      }
+      if (maxPrice !== undefined) {
+        filter.price.$lte = Number(maxPrice);
+      }
+    }
+
+    const allowedSortFields = ["createdAt", "price", "title", "stock"];
+    const selectedSortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+    const selectedSortOrder = sortOrder === "asc" ? 1 : -1;
+
+    const products = await Product.find(filter).sort({ [selectedSortField]: selectedSortOrder });
     return res.status(200).json({ success: true, products });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getProductCategories = async (_req, res) => {
+  try {
+    const categories = await Product.distinct("category");
+    return res.status(200).json({ success: true, categories });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }

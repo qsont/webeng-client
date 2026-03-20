@@ -1,16 +1,15 @@
-import useAuthentication from "@/hooks/useAuthentication";
-import { Outlet, Navigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import Navigation from "@/components/custom/Navigation";
 
 function ShopLayout() {
 
-  const { isChecking, path } = useAuthentication();
-
-  if (isChecking) return <p className="w-full h-screen bg-green-500">Loading...</p>;
-  if (path) return <Navigate to={path} replace />;
-
   return (
-    <main className="min-h-screen grid place-items-center p-6">
-      <Outlet />
+    <main className="min-h-screen bg-background">
+      <Navigation />
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <Outlet />
+      </section>
     </main>
   );
 }

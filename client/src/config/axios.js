@@ -17,7 +17,6 @@ authAxios.interceptors.response.use(
         if (err.response.status === 401) {
             try {
                 const refreshedSession = await refreshUser();
-                // console.log("What's inside refreshedSession =>", refreshedSession)
                 if (!refreshedSession.success) {
                     throw refreshedSession;
                 }
