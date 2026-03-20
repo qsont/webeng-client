@@ -25,7 +25,7 @@ function AdminLayout() {
       </div>
 
       {/* Sidebar */}
-      <aside className={`border-b md:border-b-0 md:border-r p-3 sm:p-4 space-y-2 bg-brand-violet-50/40 overflow-x-auto absolute md:relative w-full md:w-auto top-14 md:top-0 z-50 md:z-auto transition-all duration-300 ${
+      <aside className={`ui-scrollbar border-b md:border-b-0 md:border-r p-3 sm:p-4 space-y-2 bg-brand-violet-50/40 overflow-x-auto absolute md:relative w-full md:w-auto top-14 md:top-0 z-50 md:z-auto transition-all duration-300 ${
         sidebarOpen ? "left-0" : "-left-full md:left-0"
       } md:block`}>
         <h2 className="hidden md:block text-base sm:text-lg font-semibold px-2 py-1 text-brand-violet-700 whitespace-nowrap">Admin Panel</h2>
@@ -77,7 +77,7 @@ function AdminLayout() {
         </nav>
       </aside>
 
-      <section className="p-3 sm:p-4 lg:p-6 overflow-auto">
+      <section className="ui-scrollbar overflow-auto p-3 sm:p-4 lg:p-6">
         <div className="max-w-7xl mx-auto">
           <Outlet />
         </div>

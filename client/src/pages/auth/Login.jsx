@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [storeError, setStoreError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -30,6 +32,7 @@ function Login() {
   });
 
   const login = useAuthStore((state) => state.login);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   const onSubmit = async (data) => {
     
@@ -52,10 +55,9 @@ function Login() {
   };
 
   return (
-    <main className="flex items-center min-h-screen bg-background px-4 py-10">
-      <section className="mx-auto w-full max-w-md rounded-2xl border bg-card p-6 shadow-sm">
-        <h1 className="text-2xl font-bold">Login</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sign in to continue.</p>
+    <section className="mx-auto w-full max-w-md rounded-2xl border border-border bg-card/90 p-6 shadow-soft sm:p-8">
+        <h1 className="text-2xl font-black text-brand-violet-700 dark:text-brand-violet-300">Welcome back</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Sign in to continue your sweet shopping journey.</p>
 
         {storeError ? (
           <Alert variant="destructive" className="mt-4">
@@ -79,31 +81,47 @@ function Login() {
             </div>
 
             <div>
-              <Input
-                type="password"
-                placeholder="PASSWORD"
-                className="ui-field"
-                {...form.register("password")}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="PASSWORD"
+                  className="ui-field pr-11!"
+                  {...form.register("password")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((previous) => !previous)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
               {form.formState.errors.password ? (
                 <p className="mt-1 text-sm text-destructive">{form.formState.errors.password.message}</p>
               ) : null}
             </div>
 
-            <Button type="submit" className="w-full rounded-full bg-brand-violet-600 hover:bg-brand-violet-700">
-              Login
+            <Button type="submit" disabled={isLoading} className="w-full rounded-2xl bg-brand-violet-600 text-white shadow-soft hover:bg-brand-violet-700 dark:bg-brand-violet-500 dark:hover:bg-brand-violet-400">
+              {isLoading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Login"
+              )}
             </Button>
 
             <p className="mt-1 text-sm text-muted-foreground text-center">
               Don't have an account? {" "}
-              <a className={`text-brand-accent-400 hover:text-brand-accent-700 transition-colors`} href="./register">
+              <Link className="text-brand-violet-700 transition-colors hover:text-brand-violet-500 dark:text-brand-violet-300 dark:hover:text-brand-violet-200" to="/auth/register">
                 Create an account.
-              </a>
+              </Link>
             </p>
           </form>
         </Form>
-      </section>
-    </main>
+    </section>
   );
 }
 

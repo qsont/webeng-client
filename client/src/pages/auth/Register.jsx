@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,8 @@ function Register() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [storeError, setStoreError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(registerSchema),
@@ -77,6 +80,7 @@ function Register() {
   });
 
   const register = useAuthStore((state) => state.register);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   const onSubmit = async (data) => {
     setStoreError("");
@@ -98,10 +102,9 @@ function Register() {
   };
 
   return (
-    <main className="flex items-center min-h-screen bg-background px-4 py-10">
-      <section className="mx-auto w-full max-w-md rounded-2xl border bg-card p-6 shadow-sm">
-        <h1 className="text-2xl font-bold">Register</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Create your account to get started.</p>
+    <section className="mx-auto w-full max-w-md rounded-2xl border border-border bg-card/90 p-6 shadow-soft sm:p-8">
+        <h1 className="text-2xl font-black text-brand-violet-700 dark:text-brand-violet-300">Create account</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Join and explore Graham Ice Cream Bars.</p>
 
         {storeError ? (
           <Alert variant="destructive" className="mt-4">
@@ -114,13 +117,50 @@ function Register() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
             {registerFields.map((field) => (
               <div key={field.name}>
-                <Label className="mb-2">{field.label}</Label>
-                <Input
-                  type={field.type}
-                  placeholder={field.placeholder}
-                  className="ui-field"
-                  {...form.register(field.name)}
-                />
+                <Label className="mb-2 text-foreground/90">{field.label}</Label>
+
+                {field.name === "password" || field.name === "confirm" ? (
+                  <div className="relative">
+                    <Input
+                      type={
+                        field.name === "password"
+                          ? (showPassword ? "text" : "password")
+                          : (showConfirmPassword ? "text" : "password")
+                      }
+                      placeholder={field.placeholder}
+                      className="ui-field pr-11!"
+                      {...form.register(field.name)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (field.name === "password") {
+                          setShowPassword((previous) => !previous);
+                        } else {
+                          setShowConfirmPassword((previous) => !previous);
+                        }
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                      aria-label={
+                        field.name === "password"
+                          ? (showPassword ? "Hide password" : "Show password")
+                          : (showConfirmPassword ? "Hide confirm password" : "Show confirm password")
+                      }
+                    >
+                      {(field.name === "password" ? showPassword : showConfirmPassword)
+                        ? <EyeOff className="size-4" />
+                        : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                ) : (
+                  <Input
+                    type={field.type}
+                    placeholder={field.placeholder}
+                    className="ui-field"
+                    {...form.register(field.name)}
+                  />
+                )}
+
                 {form.formState.errors[field.name] ? (
                   <p className="mt-1 text-sm text-destructive">
                     {form.formState.errors[field.name].message}
@@ -129,20 +169,26 @@ function Register() {
               </div>
             ))}
 
-            <Button type="submit" className="w-full rounded-full bg-brand-violet-600 hover:bg-brand-violet-700">
-              Register
+            <Button type="submit" disabled={isLoading} className="w-full rounded-2xl bg-brand-violet-600 text-white shadow-soft hover:bg-brand-violet-700 dark:bg-brand-violet-500 dark:hover:bg-brand-violet-400">
+              {isLoading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Register"
+              )}
             </Button>
 
             <p className="mt-1 text-sm text-muted-foreground text-center">
               Already have an account? {" "}
-              <a className="text-brand-accent-400 hover:text-brand-accent-700 transition-colors" href="./login">
+              <Link className="text-brand-violet-700 transition-colors hover:text-brand-violet-500 dark:text-brand-violet-300 dark:hover:text-brand-violet-200" to="/auth/login">
                 Sign in here.
-              </a>
+              </Link>
             </p>
           </form>
         </Form>
-      </section>
-    </main>
+    </section>
   );
 }
 

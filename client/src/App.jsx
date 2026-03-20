@@ -1,7 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import SuspenseLoader from "@/components/custom/SuspenseLoader";
+import useThemeStore from "@/store/themeStore";
 
 // Common Pages
 const LandingPage = lazy(() => import("./pages/common/LandingPage"));
@@ -28,6 +29,12 @@ const CartView = lazy(() => import("./pages/shop/CartView"));
 
 
 function App() {
+  const initializeTheme = useThemeStore((state) => state.initializeTheme);
+
+  useEffect(() => {
+    initializeTheme();
+  }, [initializeTheme]);
+
   return (
     <BrowserRouter>
       <Suspense fallback={<SuspenseLoader />}>

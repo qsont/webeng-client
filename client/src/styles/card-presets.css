@@ -1,10 +1,10 @@
 @layer components {
   .ui-demo-card {
-    --demo-card-bg: white;
+    --demo-card-bg: var(--card);
     --demo-card-hover: var(--brand-violet-600);
-    --demo-card-glow: rgba(156, 81, 182, 0.28);
+    --demo-card-glow: color-mix(in srgb, var(--brand-violet-500) 30%, transparent);
 
-    @apply relative block overflow-hidden rounded-2xl border border-gray-300 bg-(--demo-card-bg) p-6 no-underline transition-all duration-500 hover:-translate-y-1 hover:border-transparent hover:shadow-[0_0_28px_var(--demo-card-glow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--demo-card-hover) focus-visible:ring-offset-2;
+    @apply relative block overflow-hidden rounded-3xl border border-border bg-(--demo-card-bg) p-6 text-card-foreground no-underline shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-transparent hover:shadow-[0_0_28px_var(--demo-card-glow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--demo-card-hover) focus-visible:ring-offset-2;
   }
 
   .ui-demo-card-fill {

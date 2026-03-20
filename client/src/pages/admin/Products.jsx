@@ -187,7 +187,7 @@ function Products() {
       </div>
 
       {viewMode === "row" ? (
-      <div className="overflow-x-auto rounded-lg border -mx-3 sm:mx-0">
+      <div className="ui-scrollbar overflow-x-auto rounded-3xl border -mx-3 sm:mx-0">
         <table className="w-full text-xs sm:text-sm">
           <thead className="bg-brand-violet-100/60 text-left text-brand-violet-800">
             <tr>
@@ -243,7 +243,7 @@ function Products() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <span className="font-medium">Price:</span>
-                  <p>${Number(product?.price).toFixed(2)}</p>
+                  <p>₱{Number(product?.price).toFixed(2)}</p>
                 </div>
                 <div>
                   <span className="font-medium">Stock:</span>
