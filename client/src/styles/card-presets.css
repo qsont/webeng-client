@@ -1,0 +1,25 @@
+@layer components {
+  .ui-demo-card {
+    --demo-card-bg: white;
+    --demo-card-hover: var(--brand-violet-600);
+    --demo-card-glow: rgba(156, 81, 182, 0.28);
+
+    @apply relative block overflow-hidden rounded-2xl border border-gray-300 bg-(--demo-card-bg) p-6 no-underline transition-all duration-500 hover:-translate-y-1 hover:border-transparent hover:shadow-[0_0_28px_var(--demo-card-glow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--demo-card-hover) focus-visible:ring-offset-2;
+  }
+
+  .ui-demo-card-fill {
+    @apply flex flex-col absolute inset-x-0 bottom-0 z-0 h-0 bg-(--demo-card-hover) transition-all duration-500 ease-out group-hover:h-full;
+  }
+
+  .ui-demo-card-content {
+    @apply relative z-10 flex flex-col items-center gap-6 transition-colors duration-500 group-hover:text-white;
+  }
+
+  .ui-demo-card-image {
+    @apply size-40 object-cover transition-transform duration-500 ease-out group-hover:scale-105 group-hover:rotate-5;
+  }
+
+  .ui-demo-card-button {
+    @apply pointer-events-none rounded-full px-6 transition-colors duration-500 group-hover:bg-white group-hover:text-(--demo-card-hover);
+  }
+}
