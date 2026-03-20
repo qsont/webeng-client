@@ -41,7 +41,6 @@ function Login() {
         setStoreError(result?.message ?? "Login failed");
         return;
       }
-
       toast({
         title: "Welcome back",
         description: `Login successful. You are ${result?.user.role}`,

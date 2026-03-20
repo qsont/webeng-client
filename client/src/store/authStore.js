@@ -63,7 +63,7 @@ const useAuthStore = create((set) => ({
 
   register: async (formData) => {
     set({ isLoading: true });
-    console.log(import.meta.env.VITE_API)
+    console.log(API_URL)
     try {
       const response = await axios.post(`/auth/register`, formData, { baseURL: API_URL, withCredentials: true });
       set({ isLoading: false });
@@ -74,6 +74,27 @@ const useAuthStore = create((set) => ({
         isLoading: false,
         isAuthenticated: false,
         user: null,
+        error: error.message
+      });
+      return error?.response?.data ?? { success: false, message: "Network error. Please try again." }
+    }
+  },
+
+  logout: async () => {
+    set({ isLoading: true });
+    try {
+      const response = await axios.delete(`/auth/logout`, { baseURL: API_URL, withCredentials: true });
+      set({
+        isLoading: false,
+        isAuthenticated: false,
+        user: null,
+        error: null
+      });
+      return response?.data;
+    }
+    catch (error) {
+      set({
+        isLoading: false,
         error: error.message
       });
       return error?.response?.data ?? { success: false, message: "Network error. Please try again." }

@@ -17,6 +17,7 @@ export default function useAuthentication() {
   }, [checkAuth]);
 
   let path = null;
+  console.log(user)
 
   if (!isChecking) {
     if (!isAuthenticated && location.pathname !== "/" && !location.pathname.startsWith("/auth")) path = "/";
@@ -27,6 +28,8 @@ export default function useAuthentication() {
     // Wrong privilege
     else if (user?.role === "admin" && location.pathname.includes("/shop")) path = "/admin/dashboard";
   }
+
+  console.log(path)
 
   return { isChecking, path }
 }

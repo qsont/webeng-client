@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
+import SuspenseLoader from "@/components/custom/SuspenseLoader";
 
 // Common Pages
 const LandingPage = lazy(() => import("./pages/common/LandingPage"));
@@ -18,15 +19,20 @@ const Orders = lazy(() => import("./pages/admin/Orders.jsx"));
 const Transactions = lazy(() => import("./pages/admin/Transactions.jsx"));
 
 const ShopLayout = lazy(() => import("./components/layout/ShopLayout"));
+const UserProtectedRoute = lazy(() => import("./components/layout/UserProtectedRoute"));
 const ShopHome = lazy(() => import("./pages/shop/ShopHome"));
+const ProductView = lazy(() => import("./pages/shop/ProductView"));
+const AboutView = lazy(() => import("./pages/shop/AboutView"));
+const ContactView = lazy(() => import("./pages/shop/ContactView"));
+const CartView = lazy(() => import("./pages/shop/CartView"));
 
 
 function App() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<p className="p-6 text-sm">Loading page...</p>}>
+      <Suspense fallback={<SuspenseLoader />}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route index element={<LandingPage />} />
 
           {/* Auth */}
           <Route path="/auth" element={<AuthLayout />}>
@@ -43,9 +49,16 @@ function App() {
             <Route path="transactions" element={<Transactions />} />
           </Route>
 
-          {/* Shop */}
-          <Route path="/shop" element={<ShopLayout />}>
-            <Route path="" element={<ShopHome />} />
+          {/* User-facing routes */}
+          <Route element={<ShopLayout />}>
+            <Route path="/shop" element={<ShopHome />} />
+            <Route path="/about" element={<AboutView />} />
+            <Route path="/contact" element={<ContactView />} />
+
+            <Route element={<UserProtectedRoute />}>
+              <Route path="/product/:productId" element={<ProductView />} />
+              <Route path="/cart" element={<CartView />} />
+            </Route>
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

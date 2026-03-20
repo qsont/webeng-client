@@ -5,7 +5,7 @@ function AuthLayout() {
 
 const { isChecking, path } = useAuthentication();
 
-  if (isChecking) return <p className="w-full h-screen bg-green-500">Loading...</p>;
+  if (isChecking) return null;
   if (path) return <Navigate to={path} replace />;
 
   return (

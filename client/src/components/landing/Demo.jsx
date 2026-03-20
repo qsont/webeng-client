@@ -3,31 +3,33 @@ import DemoCard from "../custom/DemoCard";
 const products = [
   {
     name: 'Plain',
-    img: './src/assets/graham1.png',
+    img: null,
   },
   {
     name: 'Mango',
-    img: './src/assets/graham1.png',
+    img: null,
   },
   {
     name: 'Cookies & Cream',
-    img: './src/assets/graham1.png',
+    img: null,
   },
   {
     name: 'Milo',
-    img: './src/assets/graham1.png',
+    img: null,
   },
 ];
 
 function Demo() {
-  return (<section className="flex flex-col items-center bg-white p-4 sm:p-6 lg:p-8 m-2 sm:m-4 lg:m-6">
+  return (<section className="flex flex-col items-center bg-white p-4 sm:p-6 lg:p-8 m-2 sm:m-4 lg:m-6 w-full">
 
+    <div className="max-w-6xl w-full">
+      <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold my-4 sm:my-6 lg:my-8 text-center text-brand-violet-900">The Best in Town</h1>
+      <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Discover our signature flavors, each carefully crafted to bring you the perfect taste experience.</p>
+    </div>
 
-    <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold my-4 sm:my-6 lg:my-8 text-center">The Best in Town</h1>
-
-    <div className="flex w-full flex-col md:flex-row gap-3 sm:gap-4 lg:gap-6">
+    <div className="flex w-full flex-col md:flex-row gap-3 sm:gap-4 lg:gap-6 max-w-6xl">
       {products.map((product) => (
-        <DemoCard className="w-full md:flex-1 md:basis-0" product={product}/>  
+        <DemoCard key={product.name} className="w-full md:flex-1 md:basis-0" product={product}/>
       ))}
     </div>
   </section>);
