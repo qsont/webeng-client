@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import useCartStore from "@/store/cartStore";
 import { useToast } from "@/components/ui/use-toast";
-import { ShoppingBag, Trash2 } from "lucide-react";
+import { CreditCard, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function CartView() {
   const { toast } = useToast();
-  const { cartItems, isLoading, error, fetchCart, updateCartItem, removeCartItem, clearCart } = useCartStore();
+  const navigate = useNavigate();
+  const { cartItems, isLoading, error, fetchCart, updateCartItem, removeCartItem, clearCart, checkoutCart } = useCartStore();
 
   useEffect(() => {
     fetchCart();
@@ -18,6 +20,8 @@ function CartView() {
     return sum + price * quantity;
   }, 0);
 
+  const totalItems = cartItems.reduce((sum, item) => sum + Number(item?.quantity ?? 0), 0);
+
   const onQuantityChange = async (productId, quantity) => {
     const result = await updateCartItem({ productId, quantity });
     toast({ title: result?.message ?? "Cart updated." });
@@ -28,9 +32,40 @@ function CartView() {
     toast({ title: result?.message ?? "Item removed." });
   };
 
+  const onDecrease = async (item) => {
+    const productId = item?.product?._id;
+    const nextQuantity = Number(item?.quantity ?? 1) - 1;
+
+    if (nextQuantity <= 0) {
+      await onRemove(productId);
+      return;
+    }
+
+    await onQuantityChange(productId, nextQuantity);
+  };
+
+  const onIncrease = async (item) => {
+    const productId = item?.product?._id;
+    const nextQuantity = Number(item?.quantity ?? 0) + 1;
+    await onQuantityChange(productId, nextQuantity);
+  };
+
   const onClear = async () => {
     const result = await clearCart();
     toast({ title: result?.message ?? "Cart cleared." });
+  };
+
+  const onCheckout = async () => {
+    const result = await checkoutCart();
+    toast({
+      title: result?.success ? "Checkout completed" : "Checkout failed",
+      description: result?.message,
+      variant: result?.success ? "default" : "destructive",
+    });
+
+    if (result?.success) {
+      navigate("/orders");
+    }
   };
 
   return (
@@ -51,35 +86,39 @@ function CartView() {
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <div className="space-y-3">
-        {cartItems?.map((item) => (
-          <article key={item?.product?._id ?? item?._id} className="rounded-3xl border border-border bg-card p-4 shadow-soft">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[88px_1fr_auto] sm:items-center">
-              <img
-                src={item?.product?.image}
-                alt={item?.product?.title}
-                className="h-20 w-20 rounded-2xl object-cover"
-              />
+      <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
+        {cartItems?.map((item, index) => (
+          <article
+            key={item?.product?._id ?? item?._id}
+            className={`grid grid-cols-[72px_1fr_auto] items-center gap-3 p-4 sm:grid-cols-[88px_1fr_auto] ${
+              index !== cartItems.length - 1 ? "border-b border-border" : ""
+            }`}
+          >
+            <img
+              src={item?.product?.image}
+              alt={item?.product?.title}
+              className="h-16 w-16 rounded-2xl object-cover sm:h-20 sm:w-20"
+            />
 
-              <div>
-                <p className="font-bold text-foreground">{item?.product?.title}</p>
-                <p className="text-xs text-muted-foreground">₱{Number(item?.product?.price ?? 0).toFixed(2)} each</p>
-              </div>
+            <div className="space-y-1">
+              <p className="line-clamp-1 font-bold text-foreground">{item?.product?.title}</p>
+              <p className="text-xs text-muted-foreground">₱{Number(item?.product?.price ?? 0).toFixed(2)} each</p>
+              <p className="text-sm font-semibold text-brand-accent-700 dark:text-brand-accent-300">
+                ₱{(Number(item?.product?.price ?? 0) * Number(item?.quantity ?? 0)).toFixed(2)}
+              </p>
+            </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  value={item?.quantity}
-                  onChange={(event) =>
-                    onQuantityChange(item?.product?._id, Number(event.target.value || 1))
-                  }
-                  className="h-9 w-16 rounded-2xl border border-input bg-background px-2 text-sm"
-                />
-                <Button type="button" variant="destructive" size="sm" onClick={() => onRemove(item?.product?._id)}>
-                  Remove
-                </Button>
-              </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Button type="button" variant="outline" size="icon" onClick={() => onDecrease(item)} disabled={isLoading}>
+                <Minus className="size-4" />
+              </Button>
+              <span className="min-w-8 text-center text-sm font-bold text-foreground">{item?.quantity}</span>
+              <Button type="button" variant="outline" size="icon" onClick={() => onIncrease(item)} disabled={isLoading}>
+                <Plus className="size-4" />
+              </Button>
+              <Button type="button" variant="ghost" size="icon" onClick={() => onRemove(item?.product?._id)} disabled={isLoading}>
+                <Trash2 className="size-4 text-destructive" />
+              </Button>
             </div>
           </article>
         ))}
@@ -94,11 +133,26 @@ function CartView() {
       </div>
 
       <footer className="rounded-3xl border border-border bg-card p-5 shadow-float">
+        <p className="mb-1 flex items-center justify-between text-sm text-muted-foreground">
+          <span>{totalItems} item(s)</span>
+          <span>Ready to checkout</span>
+        </p>
         <p className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
           <ShoppingBag className="size-4 text-brand-accent-600" />
           Estimated total
         </p>
-        <p className="text-2xl font-black text-brand-accent-700 dark:text-brand-accent-300">₱{cartTotal.toFixed(2)}</p>
+        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-2xl font-black text-brand-accent-700 dark:text-brand-accent-300">₱{cartTotal.toFixed(2)}</p>
+          <Button
+            type="button"
+            className="rounded-full"
+            onClick={onCheckout}
+            disabled={!cartItems.length || isLoading}
+          >
+            <CreditCard className="size-4" />
+            Checkout now
+          </Button>
+        </div>
       </footer>
     </section>
   );

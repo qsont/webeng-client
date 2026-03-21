@@ -21,7 +21,7 @@ function ContactView() {
           return (
             <article key={item.label} className="rounded-xl border bg-card p-5 shadow-sm">
               <div className="flex items-start gap-3">
-                <div className="rounded-full bg-brand-violet-100 p-2 text-brand-violet-700">
+                <div className="rounded-md bg-brand-violet-100 p-2 text-brand-violet-700">
                   <Icon className="size-4" />
                 </div>
                 <div>
@@ -34,14 +34,8 @@ function ContactView() {
         })}
       </div>
 
-      <div className="rounded-xl border bg-card p-6">
-        <p className="text-sm leading-7 text-muted-foreground">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer faucibus mi at felis rutrum, non cursus
-          dolor iaculis. Praesent non ex vitae lectus efficitur lacinia. Phasellus volutpat orci et arcu posuere,
-          vitae ultricies tortor tincidunt. Ut volutpat interdum justo, ac volutpat est feugiat et. Suspendisse
-          interdum magna ut lacus pellentesque, ac faucibus risus bibendum. Cras quis pretium purus. Mauris gravida
-          nisl nec velit aliquet tempus.
-        </p>
+      <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+        Contact form is temporarily unavailable.
       </div>
     </section>
   );

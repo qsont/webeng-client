@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import useAdminStore from "@/store/adminStore";
+import ProductImageUploadField from "@/components/custom/ProductImageUploadField";
+import { useSearchParams } from "react-router-dom";
 
 const initialForm = {
   title: "",
@@ -16,11 +19,14 @@ const initialForm = {
 
 function Products() {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     products,
+    productCategories,
     isLoading,
     error,
     fetchProducts,
+    fetchProductCategories,
     createProduct,
     updateProduct,
     deleteProduct,
@@ -28,11 +34,53 @@ function Products() {
 
   const [formData, setFormData] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
-  const [viewMode, setViewMode] = useState("row");
+  const [viewMode, setViewMode] = useState(searchParams.get("view") === "card" ? "card" : "row");
+  const initialQuery = searchParams.get("q") ?? "";
+  const [searchText, setSearchText] = useState(initialQuery);
+  const [queryText, setQueryText] = useState(initialQuery);
+  const [selectedCategories, setSelectedCategories] = useState(
+    (searchParams.get("cats") ?? "").split(",").map((value) => value.trim()).filter(Boolean)
+  );
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") ?? "createdAt_desc");
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    fetchProductCategories();
+  }, [fetchProductCategories]);
+
+  useEffect(() => {
+    const [field, order] = sortBy.split("_");
+    fetchProducts({
+      search: queryText,
+      categories: selectedCategories.join(","),
+      sortBy: field,
+      sortOrder: order,
+    });
+  }, [fetchProducts, queryText, selectedCategories, sortBy]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (queryText) params.set("q", queryText);
+    if (selectedCategories.length) params.set("cats", selectedCategories.join(","));
+    if (sortBy !== "createdAt_desc") params.set("sort", sortBy);
+    if (viewMode !== "row") params.set("view", viewMode);
+    setSearchParams(params, { replace: true });
+  }, [queryText, selectedCategories, sortBy, viewMode, setSearchParams]);
+
+  const subtitle = useMemo(() => {
+    if (selectedCategories.length === 0) return "Showing all products";
+    return `Filtered by ${selectedCategories.length} categor${selectedCategories.length > 1 ? "ies" : "y"}`;
+  }, [selectedCategories]);
+
+  const toggleCategory = (category) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category) ? prev.filter((value) => value !== category) : [...prev, category]
+    );
+  };
+
+  const onSearch = (event) => {
+    event.preventDefault();
+    setQueryText(searchText.trim());
+  };
 
   const onChange = (event) => {
     const { name, value } = event.target;
@@ -46,6 +94,11 @@ function Products() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
+
+    if (!formData.image) {
+      toast({ title: "Please upload a product image." });
+      return;
+    }
 
     const payload = {
       ...formData,
@@ -136,12 +189,12 @@ function Products() {
           />
         </div>
 
-        <Input
-          name="image"
-          placeholder="Image URL"
+        <ProductImageUploadField
           value={formData.image}
-          onChange={onChange}
-          required
+          onChange={(nextImage) =>
+            setFormData((previous) => ({ ...previous, image: nextImage }))
+          }
+          disabled={isLoading}
         />
 
         <Textarea
@@ -166,7 +219,7 @@ function Products() {
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-1">
         <span className="text-sm font-medium">View:</span>
         <Button
           type="button"
@@ -186,8 +239,79 @@ function Products() {
         </Button>
       </div>
 
+      <div className="grid grid-cols-1 gap-4 rounded-xl border border-border bg-card p-4 shadow-soft lg:grid-cols-[1fr_auto] lg:items-start">
+        <div className="space-y-3">
+          <form onSubmit={onSearch} className="flex flex-col gap-2 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+              <Input
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
+                placeholder="Search by product title or description"
+                className="pl-8"
+              />
+            </div>
+            <Button type="submit" className="rounded-md bg-brand-accent-600 text-white hover:bg-brand-accent-700">
+              Search
+            </Button>
+          </form>
+
+          <div>
+            <p className="text-sm font-semibold text-brand-accent-700">Filter by category</p>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {productCategories?.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => toggleCategory(category)}
+                  className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
+                    selectedCategories.includes(category)
+                      ? "border-brand-accent-600 bg-brand-accent-600 text-white"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-2"
+              onClick={() => {
+                setSearchText("");
+                setQueryText("");
+                setSelectedCategories([]);
+                setSortBy("createdAt_desc");
+              }}
+            >
+              Reset filters
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-1 min-w-56">
+          <label htmlFor="admin-product-sort" className="text-sm font-semibold text-brand-accent-700">
+            Sort products
+          </label>
+          <select
+            id="admin-product-sort"
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value)}
+            className="h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400"
+          >
+            <option value="createdAt_desc">Newest</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="title_asc">Name: A-Z</option>
+            <option value="stock_desc">Stock: High to Low</option>
+          </select>
+        </div>
+      </div>
+
       {viewMode === "row" ? (
-      <div className="ui-scrollbar overflow-x-auto rounded-3xl border -mx-3 sm:mx-0">
+      <div className="ui-scrollbar overflow-x-auto rounded-xl border -mx-3 sm:mx-0">
         <table className="w-full text-xs sm:text-sm">
           <thead className="bg-brand-violet-100/60 text-left text-brand-violet-800">
             <tr>

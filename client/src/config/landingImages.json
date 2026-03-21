@@ -1,0 +1,16 @@
+{
+  "banner": {
+    "heroImage": "./../src/assets/graham1.png",
+    "heroImageAlt": "Featured Graham product"
+  },
+  "story": {
+    "image": "./../src/assets/story.jpg",
+    "imageAlt": "Our story"
+  },
+  "demoImages": {
+    "Plain": "./../src/assets/plain-graham.png",
+    "Mango": "./../src/assets/mango-graham.jpg",
+    "Cookies & Cream": "./../src/assets/cookies-graham.jpg",
+    "Milo": "./../src/assets/milo-graham.jpg"
+  }
+}

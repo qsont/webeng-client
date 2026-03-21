@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import useAdminStore from "@/store/adminStore";
+import { useSearchParams } from "react-router-dom";
 
 const initialForm = {
   orderId: "",
@@ -12,6 +14,7 @@ const initialForm = {
 
 function Transactions() {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     transactions,
     isLoading,
@@ -24,11 +27,39 @@ function Transactions() {
 
   const [formData, setFormData] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
-  const [viewMode, setViewMode] = useState("row");
+  const [viewMode, setViewMode] = useState(searchParams.get("view") === "card" ? "card" : "row");
+  const initialQuery = searchParams.get("q") ?? "";
+  const [searchText, setSearchText] = useState(initialQuery);
+  const [queryText, setQueryText] = useState(initialQuery);
+  const [paymentFilter, setPaymentFilter] = useState(searchParams.get("payment") ?? "all");
+  const [completedFilter, setCompletedFilter] = useState(searchParams.get("completed") ?? "all");
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") ?? "createdAt_desc");
 
   useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
+    const [field, order] = sortBy.split("_");
+    fetchTransactions({
+      search: queryText,
+      paymentStatus: paymentFilter !== "all" ? paymentFilter : undefined,
+      isCompleted: completedFilter !== "all" ? completedFilter : undefined,
+      sortBy: field,
+      sortOrder: order,
+    });
+  }, [fetchTransactions, queryText, paymentFilter, completedFilter, sortBy]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (queryText) params.set("q", queryText);
+    if (paymentFilter !== "all") params.set("payment", paymentFilter);
+    if (completedFilter !== "all") params.set("completed", completedFilter);
+    if (sortBy !== "createdAt_desc") params.set("sort", sortBy);
+    if (viewMode !== "row") params.set("view", viewMode);
+    setSearchParams(params, { replace: true });
+  }, [queryText, paymentFilter, completedFilter, sortBy, viewMode, setSearchParams]);
+
+  const onSearch = (event) => {
+    event.preventDefault();
+    setQueryText(searchText.trim());
+  };
 
   const onChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -95,6 +126,86 @@ function Transactions() {
         <p className="text-sm text-muted-foreground">Create, update, and remove transactions.</p>
       </header>
 
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">View:</span>
+        <Button
+          type="button"
+          variant={viewMode === "row" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setViewMode("row")}
+          className="text-xs"
+        >
+          Row
+        </Button>
+        <Button
+          type="button"
+          variant={viewMode === "card" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setViewMode("card")}
+          className="text-xs"
+        >
+          Card
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-card p-4 shadow-soft lg:grid-cols-4">
+        <form onSubmit={onSearch} className="relative lg:col-span-2">
+          <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+          <Input
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            placeholder="Search by order ID"
+            className="pl-8"
+          />
+        </form>
+
+        <select
+          value={paymentFilter}
+          onChange={(event) => setPaymentFilter(event.target.value)}
+          className="h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400"
+        >
+          <option value="all">All payment states</option>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+        </select>
+
+        <select
+          value={completedFilter}
+          onChange={(event) => setCompletedFilter(event.target.value)}
+          className="h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400"
+        >
+          <option value="all">All completion flags</option>
+          <option value="true">Completed only</option>
+          <option value="false">Incomplete only</option>
+        </select>
+
+        <select
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value)}
+          className="h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400 lg:col-span-2"
+        >
+          <option value="createdAt_desc">Newest</option>
+          <option value="createdAt_asc">Oldest</option>
+          <option value="amountReceived_desc">Amount: High to Low</option>
+          <option value="amountReceived_asc">Amount: Low to High</option>
+          <option value="remittanceDate_desc">Remittance: Newest</option>
+        </select>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            setSearchText("");
+            setQueryText("");
+            setPaymentFilter("all");
+            setCompletedFilter("all");
+            setSortBy("createdAt_desc");
+          }}
+        >
+          Reset filters
+        </Button>
+      </div>
+
       <form onSubmit={onSubmit} className="grid gap-3 rounded-lg border p-3 sm:p-4">
         <Input
           name="orderId"
@@ -141,28 +252,8 @@ function Transactions() {
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-sm font-medium">View:</span>
-        <Button
-          type="button"
-          variant={viewMode === "row" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setViewMode("row")}
-          className="text-xs">
-          Row
-        </Button>
-        <Button
-          type="button"
-          variant={viewMode === "card" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setViewMode("card")}
-          className="text-xs">
-          Card
-        </Button>
-      </div>
-
       {viewMode === "row" ? (
-      <div className="ui-scrollbar overflow-x-auto rounded-3xl border -mx-3 sm:mx-0">
+      <div className="ui-scrollbar overflow-x-auto rounded-xl border -mx-3 sm:mx-0">
         <table className="w-full text-xs sm:text-sm">
           <thead className="bg-brand-violet-100/60 text-left text-brand-violet-800">
             <tr>

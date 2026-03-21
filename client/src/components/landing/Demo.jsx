@@ -1,4 +1,5 @@
 import DemoCard from "../custom/DemoCard";
+import landingImages from "@/config/landingImages.json";
 
 const products = [
   {
@@ -25,6 +26,11 @@ const products = [
 ];
 
 function Demo() {
+  const productsWithImages = products.map((product) => ({
+    ...product,
+    img: landingImages?.demoImages?.[product.name]?.trim() || null,
+  }));
+
   return (<section className="m-2 flex w-full flex-col items-center bg-background p-4 sm:m-4 sm:p-6 lg:m-6 lg:p-8">
 
     <div className="max-w-6xl w-full">
@@ -33,7 +39,7 @@ function Demo() {
     </div>
 
     <div className="flex w-full flex-col md:flex-row gap-3 sm:gap-4 lg:gap-6 max-w-6xl">
-      {products.map((product) => (
+      {productsWithImages.map((product) => (
         <DemoCard key={product.name} className="w-full md:flex-1 md:basis-0" product={product}/>
       ))}
     </div>

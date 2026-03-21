@@ -1,8 +1,7 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import useAuthStore from "@/store/authStore";
 
-function UserProtectedRoute() {
-  const location = useLocation();
+function NonAdminRoute() {
   const isChecking = useAuthStore((state) => state.isChecking);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
@@ -11,15 +10,11 @@ function UserProtectedRoute() {
     return null;
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/auth/login" replace state={{ from: location.pathname }} />;
-  }
-
-  if (user?.role === "admin") {
+  if (isAuthenticated && user?.role === "admin") {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
   return <Outlet />;
 }
 
-export default UserProtectedRoute;
+export default NonAdminRoute;

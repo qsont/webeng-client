@@ -8,6 +8,12 @@ const TransactionSchema = new mongoose.Schema(
       required: true,
     },
     amountReceived: { type: Number, required: true, min: 0 },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Completed"],
+      default: "Pending",
+    },
+    remittanceDate: { type: Date, default: null },
     isCompleted: { type: Boolean, default: false },
   },
   { timestamps: true }

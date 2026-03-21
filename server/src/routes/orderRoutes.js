@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  createOrder,
+  completeOrderDelivery,
   deleteOrder,
   getOrderById,
   getOrders,
@@ -11,7 +11,7 @@ const orderRouter = express.Router();
 
 orderRouter.get("/", getOrders);
 orderRouter.get("/:id", getOrderById);
-orderRouter.post("/", createOrder);
+orderRouter.patch("/:orderId/complete-delivery", completeOrderDelivery);
 orderRouter.put("/:id", updateOrder);
 orderRouter.delete("/:id", deleteOrder);
 
