@@ -7,24 +7,41 @@ const useAdminStore = create((set, get) => ({
   isLoading: false,
   error: null,
   products: [],
+  productCategories: [],
   orders: [],
   transactions: [],
+  completedTransactions: [],
 
   clearError: () => set({ error: null }),
 
-  fetchProducts: async (category) => {
+  fetchProducts: async (query = {}) => {
     set({ isLoading: true, error: null });
     try {
+      const params = typeof query === "string" ? { category: query } : query;
       const response = await axios.get("/admin/products", {
         baseURL: API_URL,
         withCredentials: true,
-        params: category ? { category } : undefined,
+        params,
       });
       set({ isLoading: false, products: response?.data?.products ?? [] });
       return response?.data;
     } catch (error) {
       set({ isLoading: false, error: error.message });
       return error?.response?.data ?? { success: false, message: "Network error. Please try again." };
+    }
+  },
+
+  fetchProductCategories: async () => {
+    try {
+      const response = await axios.get("/products/categories", {
+        baseURL: API_URL,
+        withCredentials: true,
+      });
+
+      set({ productCategories: response?.data?.categories ?? [] });
+      return response?.data;
+    } catch (error) {
+      return error?.response?.data ?? { success: false, message: "Failed to load product categories." };
     }
   },
 
@@ -76,30 +93,15 @@ const useAdminStore = create((set, get) => ({
     }
   },
 
-  fetchOrders: async () => {
+  fetchOrders: async (query = {}) => {
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get("/admin/orders", {
         baseURL: API_URL,
         withCredentials: true,
+        params: query,
       });
       set({ isLoading: false, orders: response?.data?.orders ?? [] });
-      return response?.data;
-    } catch (error) {
-      set({ isLoading: false, error: error.message });
-      return error?.response?.data ?? { success: false, message: "Network error. Please try again." };
-    }
-  },
-
-  createOrder: async (formData) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await axios.post("/admin/orders", formData, {
-        baseURL: API_URL,
-        withCredentials: true,
-      });
-      await get().fetchOrders();
-      set({ isLoading: false });
       return response?.data;
     } catch (error) {
       set({ isLoading: false, error: error.message });
@@ -115,6 +117,32 @@ const useAdminStore = create((set, get) => ({
         withCredentials: true,
       });
       await get().fetchOrders();
+      set({ isLoading: false });
+      return response?.data;
+    } catch (error) {
+      set({ isLoading: false, error: error.message });
+      return error?.response?.data ?? { success: false, message: "Network error. Please try again." };
+    }
+  },
+
+  completeOrderDelivery: async (orderId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.patch(
+        `/admin/orders/${orderId}/complete-delivery`,
+        {},
+        {
+          baseURL: API_URL,
+          withCredentials: true,
+        }
+      );
+
+      await Promise.all([
+        get().fetchOrders(),
+        get().fetchTransactions(),
+        get().fetchCompletedTransactions(),
+      ]);
+
       set({ isLoading: false });
       return response?.data;
     } catch (error) {
@@ -139,14 +167,31 @@ const useAdminStore = create((set, get) => ({
     }
   },
 
-  fetchTransactions: async () => {
+  fetchTransactions: async (query = {}) => {
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get("/admin/transactions", {
         baseURL: API_URL,
         withCredentials: true,
+        params: query,
       });
       set({ isLoading: false, transactions: response?.data?.transactions ?? [] });
+      return response?.data;
+    } catch (error) {
+      set({ isLoading: false, error: error.message });
+      return error?.response?.data ?? { success: false, message: "Network error. Please try again." };
+    }
+  },
+
+  fetchCompletedTransactions: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get("/admin/transactions", {
+        baseURL: API_URL,
+        withCredentials: true,
+        params: { paymentStatus: "Completed" },
+      });
+      set({ isLoading: false, completedTransactions: response?.data?.transactions ?? [] });
       return response?.data;
     } catch (error) {
       set({ isLoading: false, error: error.message });

@@ -1,7 +1,12 @@
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "@/store/authStore";
 
 function DemoCard({ product, className }) {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   const flavorStyles = {
     mango: {
       placeholder: "from-flavor-mango/70 to-flavor-mango/30",
@@ -22,10 +27,17 @@ function DemoCard({ product, className }) {
 
   const currentFlavor = flavorStyles[product?.flavor] ?? flavorStyles.cookies;
 
+  const onAction = () => {
+    if (!isAuthenticated) {
+      navigate("/auth/login");
+      return;
+    }
+
+    navigate("/shop");
+  };
+
   return (
-    <a
-      href={product.href ?? "#"}
-      className={cn("group ui-demo-card transition-transform hover:scale-105", className)}>
+    <article className={cn("group ui-demo-card transition-transform hover:scale-105", className)}>
       <div className="ui-demo-card-fill" />
 
       <div className="ui-demo-card-content">
@@ -52,13 +64,14 @@ function DemoCard({ product, className }) {
         <h2 className="text-center text-base font-bold text-foreground sm:text-lg lg:text-xl">{product.name}</h2>
         <div className="h-full">
           <Button
-            asChild
+            type="button"
+            onClick={onAction}
             className={cn("ui-demo-card-button text-xs transition-colors sm:text-sm", currentFlavor.button)}>
-            <span>View Details</span>
+            View Details
           </Button>
         </div>
       </div>
-    </a>
+    </article>
   );
 }
 

@@ -1,13 +1,57 @@
 import Transaction from "../model/Transaction.js";
 
-export const getTransactions = async (_req, res) => {
+export const getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find()
+    const {
+      paymentStatus,
+      isCompleted,
+      orderId,
+      search,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    const filters = {};
+
+    if (paymentStatus) {
+      if (paymentStatus === "Completed") {
+        filters.$or = [{ paymentStatus: "Completed" }, { isCompleted: true }];
+      } else {
+        filters.paymentStatus = paymentStatus;
+      }
+    }
+
+    if (isCompleted !== undefined) {
+      filters.isCompleted = String(isCompleted).toLowerCase() === "true";
+    }
+
+    if (orderId && String(orderId).trim()) {
+      filters.orderId = String(orderId).trim();
+    }
+
+    if (search && String(search).trim() && !filters.orderId) {
+      const searchText = String(search).trim();
+      if (searchText && searchText.length >= 6) {
+        filters.$expr = {
+          $regexMatch: {
+            input: { $toString: "$orderId" },
+            regex: searchText,
+            options: "i",
+          },
+        };
+      }
+    }
+
+    const allowedSortFields = ["createdAt", "updatedAt", "amountReceived", "paymentStatus", "remittanceDate"];
+    const selectedSortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+    const selectedSortOrder = sortOrder === "asc" ? 1 : -1;
+
+    const transactions = await Transaction.find(filters)
       .populate({
         path: "orderId",
         select: "totalAmount status paymentStatus user",
       })
-      .sort({ createdAt: -1 });
+      .sort({ [selectedSortField]: selectedSortOrder });
 
     return res.status(200).json({ success: true, transactions });
   } catch (error) {
@@ -34,13 +78,19 @@ export const getTransactionById = async (req, res) => {
 
 export const createTransaction = async (req, res) => {
   try {
-    const { orderId, amountReceived, isCompleted } = req.body;
+    const { orderId, amountReceived, isCompleted, paymentStatus, remittanceDate } = req.body;
 
     if (!orderId || amountReceived === undefined) {
       return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
-    const transaction = await Transaction.create({ orderId, amountReceived, isCompleted });
+    const transaction = await Transaction.create({
+      orderId,
+      amountReceived,
+      isCompleted,
+      paymentStatus,
+      remittanceDate,
+    });
     return res.status(201).json({ success: true, message: "Transaction created successfully.", transaction });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });

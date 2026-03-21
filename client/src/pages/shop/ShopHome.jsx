@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import useShopStore from "@/store/shopStore";
+import grahamBanner from "@/assets/graham-banner.jpg";
 
 function ShopHome() {
   const { products, categories, isLoading, error, fetchProducts, fetchCategories } = useShopStore();
@@ -54,7 +55,7 @@ function ShopHome() {
     <section className="space-y-6">
       <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-float">
         <img
-          src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1600&q=80"
+          src={grahamBanner}
           alt="Shop banner"
           className="h-52 w-full object-cover sm:h-64"
         />
@@ -128,19 +129,39 @@ function ShopHome() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {products?.map((product) => (
-              <article key={product?._id} className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-float">
-                <img src={product?.image} alt={product?.title} className="h-44 w-full object-cover" />
-                <div className="space-y-2 p-4">
-                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${getFlavorChipClass(product?.category)}`}>
+              <article
+                key={product?._id}
+                className={`overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-all ${
+                  Number(product?.stock ?? 0) <= 0
+                    ? "opacity-65 grayscale"
+                    : "hover:-translate-y-0.5 hover:shadow-float"
+                }`}
+              >
+                <div className="relative">
+                  <img src={product?.image} alt={product?.title} className="h-56 w-full object-cover" />
+                  <span className={`absolute left-3 top-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide shadow-sm ${getFlavorChipClass(product?.category)}`}>
                     {product?.category}
                   </span>
+                  {Number(product?.stock ?? 0) <= 0 ? (
+                    <span className="absolute right-3 top-3 inline-flex rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Out of stock
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="space-y-3 p-4">
                   <h3 className="line-clamp-1 text-base font-bold text-foreground">{product?.title}</h3>
-                  <p className="line-clamp-2 text-sm text-muted-foreground">{product?.description}</p>
-                  <div className="flex items-center justify-between pt-2">
-                    <p className="text-base font-black text-brand-accent-700">₱{Number(product?.price).toFixed(2)}</p>
-                    <Button asChild size="sm" className="rounded-full bg-brand-accent-600 text-white hover:bg-brand-accent-700">
-                      <Link to={`/product/${product?._id}`}>View product</Link>
-                    </Button>
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-black text-brand-accent-700">₱{Number(product?.price).toFixed(2)}</p>
+                    {Number(product?.stock ?? 0) <= 0 ? (
+                      <Button size="sm" className="rounded-full" disabled>
+                        Unavailable
+                      </Button>
+                    ) : (
+                      <Button asChild size="sm" className="rounded-full bg-brand-accent-600 text-white hover:bg-brand-accent-700">
+                        <Link to={`/product/${product?._id}`}>View product</Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </article>

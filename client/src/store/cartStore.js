@@ -123,6 +123,33 @@ const useCartStore = create((set) => ({
       return error?.response?.data ?? { success: false, message: "Failed to clear cart." };
     }
   },
+
+  checkoutCart: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.post(
+        "/cart/checkout",
+        {},
+        {
+          baseURL: API_URL,
+          withCredentials: true,
+        }
+      );
+
+      set({
+        cartItems: response?.data?.cartItems ?? [],
+        isLoading: false,
+      });
+
+      return response?.data;
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error?.response?.data?.message ?? error.message,
+      });
+      return error?.response?.data ?? { success: false, message: "Checkout failed." };
+    }
+  },
 }));
 
 export default useCartStore;

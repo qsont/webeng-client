@@ -32,8 +32,33 @@ function ProductView() {
     return <p className="text-sm text-muted-foreground">Product not found.</p>;
   }
 
+  const stockLimit = Math.max(0, Number(selectedProduct?.stock ?? 0));
+
+  const clampQuantity = (value) => {
+    const parsedValue = Number(value);
+    const fallbackValue = stockLimit > 0 ? 1 : 0;
+
+    if (!Number.isFinite(parsedValue)) {
+      return fallbackValue;
+    }
+
+    if (stockLimit <= 0) {
+      return 0;
+    }
+
+    return Math.min(Math.max(1, parsedValue), stockLimit);
+  };
+
   const onAddToCart = async () => {
-    const result = await addToCart({ productId: selectedProduct?._id, quantity });
+    if (stockLimit <= 0) {
+      toast({ title: "This product is currently out of stock." });
+      return;
+    }
+
+    const clampedQuantity = clampQuantity(quantity);
+    setQuantity(clampedQuantity);
+
+    const result = await addToCart({ productId: selectedProduct?._id, quantity: clampedQuantity });
     toast({ title: result?.message ?? "Cart updated." });
   };
 
@@ -124,17 +149,21 @@ function ProductView() {
             <div className="flex flex-wrap items-center gap-2">
               <input
                 type="number"
-                min="1"
+                min={stockLimit > 0 ? "1" : "0"}
+                max={String(stockLimit)}
                 value={quantity}
-                onChange={(event) => setQuantity(Number(event.target.value || 1))}
+                onChange={(event) => setQuantity(clampQuantity(event.target.value || 1))}
+                disabled={stockLimit <= 0}
                 className="h-10 w-24 rounded-2xl border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-brand-violet-400"
               />
               <Button
                 type="button"
                 className="rounded-2xl bg-brand-violet-600 text-white shadow-soft hover:bg-brand-violet-700 dark:bg-brand-violet-500 dark:hover:bg-brand-violet-400"
-                onClick={onAddToCart}>
+                onClick={onAddToCart}
+                disabled={stockLimit <= 0}
+              >
                 <ShoppingCart className="size-4" />
-                Add to cart
+                {stockLimit <= 0 ? "Out of stock" : "Add to cart"}
               </Button>
               <Button type="button" variant="outline" className="rounded-2xl" onClick={() => navigate("/cart")}>
                 View cart
